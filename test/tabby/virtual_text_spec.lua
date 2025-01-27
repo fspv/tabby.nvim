@@ -1,3 +1,5 @@
+local it = require('plenary.busted').it
+local describe = require('plenary.busted').describe
 local assert = require('luassert')
 local mock = require('luassert.mock')
 local stub = require('luassert.stub')

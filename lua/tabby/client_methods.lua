@@ -255,7 +255,7 @@ local _handle_semantic_tokens_range_wrapper = function(err, result, ctx, config)
   return _handle_semantic_tokens_range(client, bufnr, result)
 end
 
-M = {
+local M = {
   handle_text_document_declaration = _handle_text_document_declaration_wrapper,
   handle_semantic_tokens_range = _handle_semantic_tokens_range_wrapper,
 }

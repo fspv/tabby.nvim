@@ -1,3 +1,4 @@
+local it = require('plenary.busted').it
 local describe = require('plenary.busted').describe
 local assert = require('luassert')
 local before_each = require('plenary.busted').before_each

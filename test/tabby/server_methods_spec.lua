@@ -1,5 +1,9 @@
--- test/spec/buffer_spec.lua
+local it = require('plenary.busted').it
+local describe = require('plenary.busted').describe
 local module = require('tabby.server_methods') -- replace with actual plugin name
+local before_each = require('plenary.busted').before_each
+local after_each = require('plenary.busted').after_each
+local assert = require('luassert')
 
 describe('notify_buffer_change', function()
   local test_file1 = vim.fn.getcwd() .. '/test_data/test1.txt'
@@ -80,7 +84,7 @@ describe('notify_buffer_change', function()
     }
 
     -- Single assertion comparing the full structure
-    assert.are.same(expected, notifications[1])
+    assert.same(expected, notifications[1])
   end)
 
   it('should handle LSP client notification failure', function()
