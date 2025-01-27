@@ -1,3 +1,5 @@
+local tabby = require("tabby")
+
 local M = {}
 
 ---@class Buffer
@@ -18,7 +20,6 @@ local function _collect_visible_buffers(except_active_buffer)
 
     -- Only include buffers with valid file paths
     if vim.fn.filereadable(fname) == 1 and fname:sub(1, 1) == "/" then
-      print("found  " .. fname)
       -- Get visible lines range for the window
       local topline = vim.fn.line("w0")
       local botline = vim.fn.line("w$")
@@ -78,13 +79,14 @@ function M.notify_buffer_change(bufnr, client)
       visibleEditors = _collect_visible_buffers(true)
     }
 
+    tabby.log(string.format("Sending %s to LSP client", vim.inspect(params)), vim.log.levels.DEBUG)
     -- Send notification to all active LSP clients
     local notify_success = client.notify(
       "tabby/editors/didChangeActiveEditor",
       params
     )
     if not notify_success then
-      vim.notify("Tabby LSP client is down")
+      tabby.log(string.format("Failed to send %s to LSP client", vim.inspect(params)), vim.log.levels.ERROR)
     end
   end
 end

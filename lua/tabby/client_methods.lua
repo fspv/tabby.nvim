@@ -1,6 +1,7 @@
 -- This file contains methods exposed by neovim instance to reply to the requests from tabby agent.
 -- These methods are used by tabby agent to fetch missing information about files (such as semantic tokens, etc).
 
+local tabby = require("tabby")
 
 local default_error_code = -32603 -- suggested by chatgpt, have no idea what it means
 
@@ -21,7 +22,6 @@ local function _get_semantic_tokens(client, bufnr, range)
   -- Request semantic tokens from the client
   local tokens = client.request_sync('textDocument/semanticTokens/range', params, 1000, bufnr)
   if tokens and tokens.err then
-    -- vim.notify('Error fetching semantic tokens from lsp client: ' .. vim.inspect(tokens.err), vim.log.levels.ERROR)
     return nil
   end
   if tokens and tokens.result then
@@ -57,7 +57,6 @@ local function _get_language_lsp_client(uri, method)
     )
   ) do
     if client.name ~= "tabby" then
-      -- vim.notify("Got client " .. client.name .. " for buffer " .. bufnr)
       return client
     end
   end
@@ -75,20 +74,34 @@ end
 ---@param params lsp.DefinitionParams
 ---@return lsp.Definition|WrappedErrorResponse|nil
 local _handle_text_document_definition = function(client, bufnr, params)
-  -- vim.notify("Got text document declaration request: " .. vim.inspect(result))
-
+  tabby.log(
+    string.format("handling textDocument/definition for %s", vim.inspect(params)),
+    vim.log.levels.DEBUG
+  )
   local response = client.request_sync("textDocument/definition", params, 1000, bufnr)
-  -- vim.notify(vim.inspect(response))
 
   if response and response.result then
+    tabby.log(
+      string.format("textDocument/definition response: %s", vim.inspect(response.result)),
+      vim.log.levels.DEBUG
+    )
     return response.result
   end
 
   if response and response.err then
+    tabby.log(
+      string.format("textDocument/definition error: %s", vim.inspect(response.err)),
+      vim.log.levels.ERROR
+    )
     return response.err
   end
+
+  tabby.log(
+    string.format("textDocument/definition response: %s", vim.inspect(response)),
+    vim.log.levels.ERROR
+  )
+
   -- Often fails when editing files and syntax is temporarily incorrect
-  -- vim.notify("Tabby definition request failed: " .. vim.inspect(result), vim.log.levels.ERROR)
   return {
     error = {
       code = default_error_code,
@@ -103,20 +116,35 @@ end
 ---@param params lsp.DeclarationParams
 ---@return lsp.Declaration|WrappedErrorResponse|nil
 local _handle_text_document_declaration = function(client, bufnr, params)
-  -- vim.notify("Got text document declaration request: " .. vim.inspect(result))
+  tabby.log(
+    string.format("handling textDocument/declaration for %s", vim.inspect(params)),
+    vim.log.levels.DEBUG
+  )
 
   local response = client.request_sync("textDocument/definition", params, 1000, bufnr)
-  -- vim.notify(vim.inspect(response))
 
   if response and response.result then
+    tabby.log(
+      string.format("textDocument/declaration response: %s", vim.inspect(response.result)),
+      vim.log.levels.DEBUG
+    )
     return response.result
   end
 
   if response and response.err then
+    tabby.log(
+      string.format("textDocument/declaration error: %s", vim.inspect(response.err)),
+      vim.log.levels.ERROR
+    )
     return response.err
   end
+
+  tabby.log(
+    string.format("textDocument/declaration response: %s", vim.inspect(response)),
+    vim.log.levels.ERROR
+  )
+
   -- Often fails when editing files and syntax is temporarily incorrect
-  -- vim.notify("Tabby definition request failed: " .. vim.inspect(result), vim.log.levels.ERROR)
   return {
     error = {
       code = default_error_code,
@@ -160,6 +188,11 @@ end
 ---@param params lsp.SemanticTokensRangeParams
 ---@return SemanticTokensRangeResponse|WrappedErrorResponse
 local _handle_semantic_tokens_range = function(client, bufnr, params)
+  tabby.log(
+    string.format("handling semantic tokens request for %s", vim.inspect(params)),
+    vim.log.levels.DEBUG
+  )
+
   local range = params.range
 
   -- Get the semantic tokens and legend
@@ -167,6 +200,7 @@ local _handle_semantic_tokens_range = function(client, bufnr, params)
   local legend = _get_semantic_token_legend(client)
 
   if not legend then
+    tabby.log("Failed to get legend for semantic tokens", vim.log.levels.ERROR)
     return {
       error = {
         code = default_error_code,
@@ -176,6 +210,7 @@ local _handle_semantic_tokens_range = function(client, bufnr, params)
   end
 
   if not tokens then
+    tabby.log("Failed to get semantic tokens", vim.log.levels.ERROR)
     return {
       error = {
         code = default_error_code,
@@ -185,10 +220,14 @@ local _handle_semantic_tokens_range = function(client, bufnr, params)
   end
 
   -- Return the result
-  return {
+  local result = {
     legend = legend,
     tokens = tokens
   }
+
+  tabby.log(string.format("got semantic tokens: %s", vim.inspect(result)), vim.log.levels.DEBUG)
+
+  return result
 end
 
 -- Handler for the semantic tokens range request

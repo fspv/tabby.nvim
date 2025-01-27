@@ -13,7 +13,7 @@ local M = {}
 ---@field trigger_or_dismiss string Keybinding to trigger or dismiss completion
 
 -- Plugin configuration with defaults
----@type { inline_completion: InlineCompletionConfig }
+---@type { inline_completion: InlineCompletionConfig, debug: boolean }
 local plugin_config = {
   inline_completion = {
     trigger = "auto", -- or "manual"
@@ -21,8 +21,20 @@ local plugin_config = {
       accept = "<Tab>",
       trigger_or_dismiss = "<C-\\>"
     }
-  }
+  },
+  debug = false
 }
+
+---@param msg string The message to log
+---@param level? integer The log level (vim.log.levels)
+---@return nil
+function M.log(msg, level)
+  if plugin_config.debug or vim.env.PLENARY_TEST ~= nil then
+    msg = string.format("tabby: %s", msg)
+    vim.notify(msg, level, {})
+  end
+end
+
 ---@class CompletionContext
 ---@field buf integer
 ---@field offset integer
@@ -53,6 +65,14 @@ end
 ---@param request_id string
 ---@param callback fun(completion_list: CompletionList)
 function M.request_inline_completion(inline_completion_params, request_id, callback)
+  M.log(
+    string.format(
+      "inline_completion_params: %s, request_id: %s",
+      vim.inspect(inline_completion_params),
+      request_id
+    ),
+    vim.log.levels.DEBUG
+  )
   local lsp_client = _get_client()
   if lsp_client == nil then
     return
@@ -64,7 +84,7 @@ function M.request_inline_completion(inline_completion_params, request_id, callb
     inline_completion_params,
     function(err, result)
       if err ~= nil then
-        -- vim.notify("Tabby inline completion request failed: " .. vim.inspect(err), vim.log.levels.ERROR)
+        M.log(string.format("Error: %s", vim.inspect(err)), vim.log.levels.ERROR)
         return
       end
       wrapped_callback(result)
@@ -106,12 +126,14 @@ end
 ---@param params CompletionContext
 ---@param result CompletionList
 local function _handle_completion_response(params, result)
+  M.log(string.format('params: %s, result: %s', vim.inspect(params), vim.inspect(result)), vim.log.levels.TRACE)
   if not vim.deep_equal(completion_state.request_context, params) then
     return
   end
 
-  local ok, _ = schema.validate_completion_list(result)
+  local ok, err = schema.validate_completion_list(result)
   if not ok then
+    M.log(string.format('Invalid completion list: %s', err), vim.log.levels.ERROR)
     return
   end
 
@@ -132,6 +154,7 @@ end
 
 ---@param is_manually boolean
 function M.trigger(is_manually)
+  M.log(string.format("triggering completion: %s", is_manually and "manually" or "auto"), vim.log.levels.DEBUG)
   if plugin_config.inline_completion.trigger ~= "auto" and not is_manually then
     return
   end
@@ -174,21 +197,24 @@ end
 
 ---@return nil
 function M.accept()
+  M.log("calling accept()", vim.log.levels.DEBUG)
   local function insert_tab()
     vim.api.nvim_put({ "\t" }, "c", true, true)
   end
 
   -- If there is nothing to complete (i.e. regular typing), just use the accept
   -- character as a regular character
-  local ok, _ = schema.validate_completion_list(completion_state.completion_list)
+  local ok, err = schema.validate_completion_list(completion_state.completion_list)
   if not ok or #completion_state.completion_list.items == 0 then
+    M.log(string.format('Invalid completion list: %s', err), vim.log.levels.ERROR)
     return insert_tab()
   end
 
   local item = completion_state.completion_list.items[1]
 
-  ok, _ = schema.validate_item(0, item)
+  ok, err = schema.validate_item(0, item)
   if not ok then
+    M.log(string.format('Invalid item: %s', err), vim.log.levels.ERROR)
     return insert_tab()
   end
 
@@ -198,6 +224,7 @@ end
 
 ---@return nil
 function M.clear()
+  M.log("calling clear()", vim.log.levels.DEBUG)
   request_manager.cancel_all_requests()
 
   completion_state.request_context = nil
@@ -210,6 +237,8 @@ end
 -- Setup function to initialize the plugin
 ---@param opts { inline_completion: InlineCompletionConfig }
 function M.setup(opts)
+  M.log(string.format("calling setup(%s)", vim.inspect(opts)), vim.log.levels.DEBUG)
+
   -- Merge user config with defaults
   plugin_config = vim.tbl_deep_extend("force", plugin_config, opts or {})
 
