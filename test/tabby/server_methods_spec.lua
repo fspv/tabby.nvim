@@ -4,8 +4,6 @@ local module = require('tabby.server_methods') -- replace with actual plugin nam
 describe('notify_buffer_change', function()
   local test_file1 = vim.fn.getcwd() .. '/test_data/test1.txt'
   local test_file2 = vim.fn.getcwd() .. '/test_data/test2.txt'
-  local mock_client
-  local notifications = {}
 
   -- Helper function to create test files
   local function create_test_file(path, content)
@@ -26,20 +24,6 @@ describe('notify_buffer_change', function()
     create_test_file(test_file1)
     create_test_file(test_file2)
 
-    -- Create a mock LSP client
-    mock_client = {
-      notify = function(method, params)
-        table.insert(notifications, {
-          method = method,
-          params = params
-        })
-        return true
-      end
-    }
-
-    -- Clear notifications
-    notifications = {}
-
     -- Setup test environment
     vim.api.nvim_command('enew')                  -- Create new buffer
     vim.api.nvim_command('edit ' .. test_file1)   -- Open first test file
@@ -56,6 +40,17 @@ describe('notify_buffer_change', function()
   end)
 
   it('should notify LSP client with correct parameters', function()
+    local notifications = {}
+    local mock_client = {
+      notify = function(method, params)
+        table.insert(notifications, {
+          method = method,
+          params = params
+        })
+        return true
+      end
+    }
+
     local current_buf = vim.api.nvim_get_current_buf()
 
     -- Call the function
@@ -105,6 +100,17 @@ describe('notify_buffer_change', function()
   end)
 
   it('should handle non-file buffers', function()
+    local notifications = {}
+    local mock_client = {
+      notify = function(method, params)
+        table.insert(notifications, {
+          method = method,
+          params = params
+        })
+        return true
+      end
+    }
+
     -- Create a scratch buffer
     vim.api.nvim_command('enew')
     local scratch_buf = vim.api.nvim_get_current_buf()
