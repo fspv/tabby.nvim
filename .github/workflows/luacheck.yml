@@ -28,4 +28,4 @@ jobs:
         # https://luacheck.readthedocs.io/en/stable/cli.html
         # https://luacheck.readthedocs.io/en/stable/warnings.html
         run: |
-          luacheck .  --no-max-line-length --std luajit  --globals vim -u --ignore 512
+          luacheck .  --no-max-line-length --std luajit  --globals vim -u --ignore 512 --include-files lua --include-files test
