@@ -1,14 +1,20 @@
-# tabby.nvim
+# Unofficial Tabby Plugin for Neovim
 
-A Neovim plugin that provides inline completion functionality integrated with LSP.
+Enhanced LSP-integrated inline completion plugin for Neovim that provides richer context for [Tabby](https://www.tabbyml.com/) suggestions. Built as an alternative to the [official vim plugin](https://github.com/TabbyML/tabby/tree/main/clients/vim) to improve completion quality through deeper Neovim LSP integration.
 
-## Features
+## Features Comparison
 
-- Automatic and manual inline completion triggers
-- LSP integration for accurate completions
-- Virtual text display of completion suggestions
-- Semantic token support
-- Custom keybindings for completion actions
+| Feature | This Plugin | Official Plugin |
+|---------|------------------|-----------------|
+| Basic Inline Completion | ✓ | ✓ |
+| LSP symbol definition resolution | ✓ | ✗ |
+| Multi-file Context Support | ✓ | ✗ |
+| Cross-file Code Resolution | ✓ | ✗ |
+| Telemetry Collection | ✗ | ✓ |
+| Test Coverage | ✓ | ✗ |
+| Vimscript | 0% | >0% |
+
+The enhanced context gathering capabilities result in significantly improved code suggestions compared to the official plugin's "around cursor only" approach. Written entirely in Lua with no VimScript dependencies, it implements features available in the VSCode client but missing from the official Vim plugin.
 
 ## Installation
 
