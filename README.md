@@ -41,32 +41,7 @@ require("lazy").setup({
 ## Configuration
 
 ```lua
-local lspconfig = require("lspconfig")
-local lspconfig_configs = require("lspconfig.configs")
-
-if not lspconfig_configs.tabby then
-  lspconfig_configs.tabby = {
-    default_config = {
-      name = "tabby",
-      filetypes = { "*" },
-      cmd = { "npx", "tabby-agent", "--stdio" },
-      single_file_support = true,
-      init_options = {
-        clientCapabilities = {
-          textDocument = {
-            completion = true,
-            inlineCompletion = true,
-          },
-          tabby = {
-            languageSupport = true,
-          },
-        },
-      },
-      root_dir = vim.fs.dirname(vim.fs.find('.git', { path = ".", upward = true })[1]),
-    }
-  }
-end
-
+require("tabby_lspconfig").setup()
 lspconfig.tabby.setup({})
 
 require('tabby').setup({
@@ -92,5 +67,5 @@ require('tabby').setup({
 Tests are written using [plenary.nvim](https://github.com/nvim-lua/plenary.nvim). To run the tests:
 
 ```bash
-nvim --headless -c "PlenaryBustedDirectory test/tabby"
+mkdir test_data && nvim --headless -c "PlenaryBustedDirectory test/tabby"
 ```
