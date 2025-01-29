@@ -22,19 +22,14 @@ Using [packer.nvim](https://github.com/wbthomason/packer.nvim):
 
 ```lua
 use {
-  'fspv/tabby.nvim',
-  requires = {
-    'nvim-lua/plenary.nvim', -- for tests
-  }
+  'fspv/tabby.nvim'
 }
 ```
 
 Using `lazy.nvim`:
 ```lua
 require("lazy").setup({
-  {
-    "fspv/tabby.nvim",
-  },
+  { "fspv/tabby.nvim" },
 })
 ```
 
@@ -44,15 +39,7 @@ require("lazy").setup({
 require("tabby_lspconfig").setup()
 lspconfig.tabby.setup({})
 
-require('tabby').setup({
-  inline_completion = {
-    trigger = "auto", -- or "manual"
-    keybindings = {
-      accept = "<Tab>",
-      trigger_or_dismiss = "<C-\\>"
-    }
-  }
-})
+require('tabby').setup({})
 ```
 
 ## Default Keybindings
@@ -69,3 +56,19 @@ Tests are written using [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
 ```bash
 mkdir test_data && nvim --headless -c "PlenaryBustedDirectory test/tabby"
 ```
+
+### Debug
+
+For debugging enable lsp debug or trace log level. It will also log debug info from this pluging
+
+```lua
+vim.lsp.set_log_level("debug")
+
+```
+
+### TODO
+[ ] Test minimal config with nix and docker
+[ ] Fix a few bugs with the completion accept and cover all of the by unittests
+[ ] Revisit virtual text logic. It is known to be incorrect in some cases
+[ ] Record a screencast showcasing capabilities
+[ ] Implement checkhealth

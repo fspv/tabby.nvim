@@ -22,16 +22,26 @@ local plugin_config = {
       trigger_or_dismiss = "<C-\\>"
     }
   },
-  debug = false
 }
 
 ---@param msg string The message to log
 ---@param level? integer The log level (vim.log.levels)
 ---@return nil
 function M.log(msg, level)
-  if plugin_config.debug or vim.env.PLENARY_TEST ~= nil then
-    msg = string.format("tabby: %s", msg)
+  msg = string.format("tabby: %s", msg)
+
+  if vim.env.PLENARY_TEST ~= nil then
     vim.notify(msg, level, {})
+  elseif level == vim.log.levels.TRACE then
+    vim.lsp.log.trace(msg)
+  elseif level == vim.log.levels.DEBUG then
+    vim.lsp.log.debug(msg)
+  elseif level == vim.log.levels.INFO then
+    vim.log.log.info(msg)
+  elseif level == vim.log.levels.WARN then
+    vim.lsp.log.warn(msg)
+  elseif level == vim.log.levels.ERROR then
+    vim.lsp.log.error(msg)
   end
 end
 
