@@ -34,7 +34,6 @@ require("lazy").setup({
   {
     "fspv/tabby.nvim",
     config = function ()
-      vim.lsp.set_log_level("debug")
       require('tabby').setup({})
     end
   },
