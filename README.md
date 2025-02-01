@@ -29,7 +29,13 @@ use {
 Using `lazy.nvim`:
 ```lua
 require("lazy").setup({
-  { "fspv/tabby.nvim" },
+  {
+    "fspv/tabby.nvim",
+    config = function ()
+      vim.lsp.set_log_level("debug")
+      require('tabby').setup({})
+    end
+  },
 })
 ```
 
@@ -37,7 +43,7 @@ require("lazy").setup({
 
 ```lua
 require("tabby_lspconfig").setup()
-lspconfig.tabby.setup({})
+require("lspconfig").tabby.setup({})
 
 require('tabby').setup({})
 ```
