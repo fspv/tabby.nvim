@@ -2,6 +2,8 @@
 
 Enhanced LSP-integrated inline completion plugin for Neovim that provides richer context for [Tabby](https://www.tabbyml.com/) suggestions. Built as an alternative to the [official vim plugin](https://github.com/TabbyML/tabby/tree/main/clients/vim) to improve completion quality through deeper Neovim LSP integration.
 
+![demo](https://github.com/user-attachments/assets/62b66e69-f18b-4b19-9fbe-162c8fe48cf6)
+
 ## Features Comparison
 
 | Feature | This Plugin | Official Plugin |
@@ -73,8 +75,8 @@ vim.lsp.set_log_level("debug")
 ```
 
 ### TODO
-[ ] Test minimal config with nix and docker
-[ ] Fix a few bugs with the completion accept and cover all of the by unittests
-[ ] Revisit virtual text logic. It is known to be incorrect in some cases
-[ ] Record a screencast showcasing capabilities
-[ ] Implement checkhealth
+
+* Test minimal config with nix and docker
+* Fix a few bugs with the completion accept and cover all of the by unittests
+* Revisit virtual text logic. It is known to be incorrect in some cases
+* Implement checkhealth
