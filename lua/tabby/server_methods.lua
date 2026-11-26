@@ -81,7 +81,7 @@ function M.notify_buffer_change(bufnr, client)
 
     tabby.log(string.format("Sending %s to LSP client", vim.inspect(params)), vim.log.levels.DEBUG)
     -- Send notification to all active LSP clients
-    local notify_success = client.notify(
+    local notify_success = client:notify(
       "tabby/editors/didChangeActiveEditor",
       params
     )

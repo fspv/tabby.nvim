@@ -89,7 +89,7 @@ function M.request_inline_completion(inline_completion_params, request_id, callb
   end
 
   local wrapped_callback = request_manager.create_callback(request_id, callback)
-  local status, lsp_request_id = lsp_client.request(
+  local status, lsp_request_id = lsp_client:request(
     "textDocument/inlineCompletion",
     inline_completion_params,
     function(err, result)
@@ -103,7 +103,7 @@ function M.request_inline_completion(inline_completion_params, request_id, callb
   if lsp_request_id then
     request_manager.register_cancellation(
       request_id,
-      function() lsp_client.cancel_request(lsp_request_id) end
+      function() lsp_client:cancel_request(lsp_request_id) end
     )
   end
 
@@ -169,9 +169,14 @@ function M.trigger(is_manually)
     return
   end
 
+  local lsp_client = _get_client()
+  if lsp_client == nil then
+    return
+  end
+
   local params = _create_completion_context(is_manually)
   ---@type lsp.TextDocumentPositionParams|nil
-  local inline_completion_params = vim.lsp.util.make_position_params()
+  local inline_completion_params = vim.lsp.util.make_position_params(0, lsp_client.offset_encoding)
   if inline_completion_params == nil then
     return
   end
@@ -184,13 +189,14 @@ function M.trigger(is_manually)
 
   local request_id = request_manager.generate_request_id()
 
-  -- Delay to avoid issuing requests when the user is typing some text
-  -- TODO: make delay configurable
-  vim.wait(
-    100,
+  -- Debounce on a timer: blocking the main thread here queues keystrokes.
+  vim.defer_fn(
     function()
       if not request_manager.is_last_request_id(request_id) then
-        return true
+        return
+      end
+      if not vim.deep_equal(_create_completion_context(is_manually), params) then
+        return
       end
       completion_state.request_context = params
 
@@ -199,17 +205,18 @@ function M.trigger(is_manually)
         request_id,
         function(result) _handle_completion_response(params, result) end
       )
-
-      return true
-    end
+    end,
+    is_manually and 0 or 100
   )
 end
 
 ---@return nil
 function M.accept()
   M.log("calling accept()", vim.log.levels.DEBUG)
+  -- Feed the accept key unmapped, so it keeps its default action (<C-j> = newline).
   local function insert_tab()
-    vim.api.nvim_put({ "\t" }, "c", true, true)
+    local key = plugin_config.inline_completion.keybindings.accept
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, false, true), "n", false)
   end
 
   -- If there is nothing to complete (i.e. regular typing), just use the accept
